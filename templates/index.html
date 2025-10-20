@@ -1,0 +1,151 @@
+{% extends "base.html" %} {% block title %}Welcome - AI Paper Setter{% endblock %} {% block content %}
+<div class="hero-section text-center py-5 mb-5">
+    <div class="container">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-brain text-primary me-3"></i> <B>AI-Based Paper Setter</B>
+        </h1>
+        <p class="lead mb-4">
+            Create, deploy, and manage question papers with the power of artificial intelligence. Streamline your educational workflow with intelligent question generation and automated grading.
+        </p>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="features-grid">
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+                                <h5>AI Question Generation</h5>
+                                <p class="text-muted">Generate intelligent questions tailored to your subject and difficulty level</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                <h5>Role-Based Access</h5>
+                                <p class="text-muted">Separate interfaces for admins, teachers, and students</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                                <h5>Performance Analytics</h5>
+                                <p class="text-muted">Track student performance and generate detailed reports</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="role-selection">
+    <div class="container">
+        <h2 class="text-center mb-5">Choose Your Role</h2>
+        <div class="row g-4 justify-content-center">
+            <!-- Admin Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 role-card">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-user-shield fa-4x text-primary mb-3"></i>
+                        <h4 class="card-title">Administrator</h4>
+                        <p class="card-text">Manage users, monitor system activity, and oversee the entire platform.</p>
+                        <ul class="list-unstyled text-start mb-4">
+                            <li><i class="fas fa-check text-success me-2"></i>User Management</li>
+                            <li><i class="fas fa-check text-success me-2"></i>System Monitoring</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Platform Analytics</li>
+                        </ul>
+                        <a href="{{ url_for('admin_login') }}" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-sign-in-alt me-2"></i>Admin Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teacher Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 role-card">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-chalkboard-teacher fa-4x text-success mb-3"></i>
+                        <h4 class="card-title">Teacher</h4>
+                        <p class="card-text">Create AI-generated papers, deploy them, and grade student submissions.</p>
+                        <ul class="list-unstyled text-start mb-4">
+                            <li><i class="fas fa-check text-success me-2"></i>AI Paper Creation</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Paper Deployment</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Automated Grading</li>
+                        </ul>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('teacher_login') }}" class="btn btn-success">
+                                <i class="fas fa-sign-in-alt me-2"></i>Teacher Login
+                            </a>
+                            <a href="{{ url_for('teacher_register') }}" class="btn btn-outline-success">
+                                <i class="fas fa-user-plus me-2"></i>Register as Teacher
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 role-card">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-user-graduate fa-4x text-info mb-3"></i>
+                        <h4 class="card-title">Student</h4>
+                        <p class="card-text">Access papers, solve questions, and track your academic progress.</p>
+                        <ul class="list-unstyled text-start mb-4">
+                            <li><i class="fas fa-check text-success me-2"></i>Access Papers</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Submit Solutions</li>
+                            <li><i class="fas fa-check text-success me-2"></i>View Results</li>
+                        </ul>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('student_login') }}" class="btn btn-info">
+                                <i class="fas fa-sign-in-alt me-2"></i>Student Login
+                            </a>
+                            <a href="{{ url_for('student_register') }}" class="btn btn-outline-info">
+                                <i class="fas fa-user-plus me-2"></i>Register as Student
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="how-it-works py-5 mt-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h5>Create Account</h5>
+                    <p class="text-muted">Register as a teacher or student</p>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h5>Generate Papers</h5>
+                    <p class="text-muted">Teachers use AI to create question papers</p>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h5>Deploy & Solve</h5>
+                    <p class="text-muted">Students access and solve deployed papers</p>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h5>Track Progress</h5>
+                    <p class="text-muted">View grades and performance analytics</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

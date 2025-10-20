@@ -1,0 +1,75 @@
+{% extends "base.html" %} 
+{% block title %}Student Dashboard - AI Paper Setter{% endblock %} 
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-graduate me-2"></i>Student Dashboard</h2>
+    <div class="text-muted">
+        Welcome, {{ current_user.full_name }}
+    </div>
+</div>
+
+<form method="get" action="" class="mb-3">
+    <div class="input-group">
+        <input type="text" class="form-control" name="search" placeholder="Search by subject..." value="{{ request.args.get('search', '') }}">
+        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Search</button>
+    </div>
+</form>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-file-alt me-2"></i>Available Papers
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if papers %}
+            <div class="row g-4">
+                {% for paper in papers %}
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ paper.title }}</h6>
+                                <p class="card-text text-muted">{{ paper.subject }}</p>
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>{{ paper.duration }} min
+                                        </small>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">
+                                            <i class="fas fa-star me-1"></i>{{ paper.total_marks }} marks
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <span class="badge bg-{% if paper.difficulty == 'easy' %}success{% elif paper.difficulty == 'medium' %}warning{% else %}danger{% endif %}">
+                                        {{ paper.difficulty.title() }}
+                                    </span>
+                                </div>
+                                
+                                <a href="{{ url_for('view_paper', paper_id=paper.id) }}" class="btn btn-primary btn-sm"> 
+                                    <i class="fas fa-book-open me-1"></i>View & Download Paper
+                                </a>
+                                
+                            </div>
+                            <div class="card-footer text-muted">
+                                <small>
+                                    <i class="fas fa-user me-1"></i>{{ paper.teacher.full_name }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No papers available at the moment.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

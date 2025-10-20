@@ -1,0 +1,125 @@
+{% extends "base.html" %} {% block title %}Teacher Dashboard - AI Paper Setter{% endblock %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chalkboard-teacher me-2"></i>Teacher Dashboard</h2>
+    <a href="{{ url_for('create_paper') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Create New Paper
+    </a>
+</div>
+
+{# --- START MODIFICATION: Display all flashed messages with custom handling for 'feedback' --- #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category == 'feedback' %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-star me-2"></i> <strong>Paper Generated!</strong> {{ message | safe }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% elif category == 'success' %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% elif category == 'error' %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% else %}
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+{# --- END MODIFICATION --- #}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-file-alt me-2"></i>My Papers
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if papers %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Difficulty</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paper in papers %}
+                    <tr>
+                        <td>
+                            <strong>{{ paper.title }}</strong>
+                        </td>
+                        <td>{{ paper.subject }}</td>
+                        <td>
+                            <span class="badge bg-{% if paper.difficulty == 'easy' %}success{% elif paper.difficulty == 'medium' %}warning{% else %}danger{% endif %}">
+                                    {{ paper.difficulty.title() }}
+                                </span>
+                        </td>
+                        <td>{{ paper.duration }} min</td>
+                        <td>
+                            {% if paper.is_deployed %}
+                            <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Deployed
+                                    </span> {% else %}
+                            <span class="badge bg-secondary">
+                                        <i class="fas fa-pause-circle me-1"></i>Draft
+                                    </span> {% endif %}
+                        </td>
+                        <td>{{ paper.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('deploy_paper', paper_id=paper.id) }}" class="btn btn-sm btn-{% if paper.is_deployed %}warning{% else %}success{% endif %}" title="{% if paper.is_deployed %}Undeploy{% else %}Deploy{% endif %}">
+                                    <i class="fas fa-{% if paper.is_deployed %}pause{% else %}play{% endif %}"></i>
+                                </a>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ url_for('download_paper', paper_id=paper.id, format='pdf') }}">
+                                                <i class="fas fa-file-pdf me-2"></i>PDF
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ url_for('download_paper', paper_id=paper.id, format='word') }}">
+                                                <i class="fas fa-file-word me-2"></i>Word
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No papers created yet.</p>
+            <a href="{{ url_for('create_paper') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Your First Paper
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %} 
+{% block title %}View Paper - {{ paper.title }}{% endblock %} 
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-1">{{ paper.title }}</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            <i class="fas fa-book me-1"></i>{{ paper.subject }}
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small class="text-muted">
+                            <i class="fas fa-user me-1"></i>{{ paper.teacher.full_name }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h6 class="text-muted mb-1">Duration</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-clock text-primary me-1"></i> {{ paper.duration }} minutes
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h6 class="text-muted mb-1">Total Marks</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-star text-warning me-1"></i> {{ paper.total_marks }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h6 class="text-muted mb-1">Difficulty</h6>
+                            <p class="mb-0">
+                                <span class="badge bg-{% if paper.difficulty == 'easy' %}success{% elif paper.difficulty == 'medium' %}warning{% else %}danger{% endif %}">
+                                    {{ paper.difficulty.title() }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-muted mb-1">Questions</h6>
+                        <p class="mb-0">
+                            <i class="fas fa-list text-info me-1"></i> {{ questions|length }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mb-4">
+            <h6><i class="fas fa-info-circle me-2"></i>Instructions:</h6>
+            <ul class="mb-0">
+                <li>Read all questions carefully before starting.</li>
+                <li>Answer all questions to the best of your ability.</li>
+                <li>Manage your time effectively across all questions.</li>
+                <li>Review your answers before final submission.</li>
+            </ul>
+        </div>
+
+        {% for question in questions %}
+        {% set q_index = loop.index %}  {# Capture the current question index, 1-based #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h6 class="mb-0">Question {{ q_index }}</h6> 
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-primary">{{ question.marks }} marks</span>
+                        <span class="badge bg-secondary">{{ question.type.replace('_', ' ').title() }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {# The question text is now given an ID to be updated by JS #}
+                <p class="question-text mb-3" id="q-{{ q_index }}">{{ question.question }}</p>
+
+                {% if question.type == 'multiple_choice' %}
+                <div class="options">
+                    <h6 class="text-muted mb-2">Options:</h6>
+                    {% for option in question.options %}
+                    <div class="mb-2">
+                        {# Displaying the option letter (A, B, C, D) using a string index on loop.index0 #}
+                        <span class="badge bg-light text-dark me-2">{{ 'ABCD'[loop.index0] }}</span> 
+                        
+                        {# FIX: Using q_index (the explicitly captured parent index) instead of loop.parent.index #}
+                        <span id="q-{{ q_index }}-opt-{{ loop.index0 }}">{{ option }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% elif question.type == 'short_answer' %}
+                <div class="alert alert-light">
+                    <small class="text-muted">
+                            <i class="fas fa-pen me-1"></i>
+                            Short answer question - provide a concise response
+                        </small>
+                </div>
+                {% elif question.type == 'essay' %}
+                <div class="alert alert-light">
+                    <small class="text-muted">
+                            <i class="fas fa-edit me-1"></i>
+                            Essay question - provide a detailed response with proper structure
+                        </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{{ url_for('student_dashboard') }}" class="btn btn-secondary me-md-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    
+                    <a href="{{ url_for('student_download_paper', paper_id=paper.id) }}" class="btn btn-primary me-md-2" target="_blank">
+                        <i class="fas fa-file-pdf me-2"></i>Download Paper (PDF)
+                    </a>
+                    
+                    <a href="{{ url_for('give_feedback', role='student', paper_id=paper.id) }}" class="btn btn-warning">
+                        <i class="fas fa-comments me-2"></i>Give App Feedback
+                    </a>
+                    
+                    {% if submitted %}
+                    <div class="alert alert-success my-2 py-2">
+                        <i class="fas fa-check-circle me-1"></i> Paper marked as started.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * Attempts to clean up basic LaTeX formatting for HTML display.
+     */
+    function escapeLatex(text) {
+        if (!text) return '';
+        // 1. Replace common LaTeX commands with readable alternatives
+        let result = text.replace(/\\text\{([^\}]+)\}/g, '$1'); // e.g., \text{m/s} -> m/s
+        result = result.replace(/\\/g, ''); // Remove remaining backslashes (e.g., \pi -> pi)
+        // 2. Remove simple single dollar signs (e.g., $5$ becomes 5)
+        result = result.replace(/\$(.*?)\$/g, (match, content) => {
+            // Only remove $ if content is simple (e.g., numbers, simple variables)
+            return content.trim();
+        });
+        
+        return result;
+    }
+
+    // Function to apply the escaping after the document is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        // NOTE: The server-side context {{ questions | tojson }} must be used here
+        const questions = JSON.parse('{{ questions | tojson | safe }}'); 
+
+        questions.forEach((question, qIndex) => {
+            const qNum = qIndex + 1;
+
+            // Update Question Text
+            const qElement = document.getElementById(`q-${qNum}`);
+            if (qElement) {
+                qElement.innerHTML = escapeLatex(question.question);
+            }
+
+            // Update Option Text for MCQs
+            if (question.type === 'multiple_choice' && question.options) {
+                question.options.forEach((option, optIndex) => {
+                    // This JavaScript section correctly uses qNum (the variable passed from the outer JS loop)
+                    const optElement = document.getElementById(`q-${qNum}-opt-${optIndex}`);
+                    if (optElement) {
+                        optElement.innerHTML = escapeLatex(option);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

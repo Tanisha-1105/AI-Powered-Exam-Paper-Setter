@@ -1,0 +1,174 @@
+{% extends "base.html" %} 
+{% block title %}Admin Dashboard{% endblock %} 
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tools me-2"></i>Admin Dashboard</h2>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white p-3">
+            <h1 class="mb-0">{{ total_users }}</h1>
+            <p class="mb-0">Total Users</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white p-3">
+            <h1 class="mb-0">{{ total_teachers }}</h1>
+            <p class="mb-0">Teachers</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white p-3">
+            <h1 class="mb-0">{{ total_students }}</h1>
+            <p class="mb-0">Students</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white p-3">
+            <h1 class="mb-0">{{ total_papers }}</h1>
+            <p class="mb-0">Total Papers</p>
+        </div>
+    </div>
+</div>
+
+<div class="card bg-purple text-white p-3 mb-4" style="background-color: #6f42c1;">
+    <h3 class="mb-0">{{ average_rating }} / 5.0 <i class="fas fa-star text-warning"></i></h3>
+    <p class="mb-0">Average Paper Rating</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Rating Distribution by Role</h5>
+            </div>
+            <div class="card-body">
+                <div style="max-width: 100%; height: 350px; margin: auto;">
+                    <canvas id="ratingPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Recent User Registrations</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in recent_users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.full_name }}</td>
+                                <td>
+                                    <span class="badge bg-{% if user.role == 'teacher' %}success{% else %}info{% endif %}">
+                                        {{ user.role.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Get data from Flask/Jinja using tojson filter
+        const ratingData = JSON.parse('{{ rating_data | tojson | safe }}');
+        const teacherData = ratingData.teacher_data;
+        const studentData = ratingData.student_data;
+
+        // Colors for 1 to 5 Stars (Consistent colors for same rating across roles)
+        const starColors = [
+            'rgba(255, 99, 132, 1)', // 1 Star (Red)
+            'rgba(255, 159, 64, 1)', // 2 Stars (Orange)
+            'rgba(255, 205, 86, 1)', // 3 Stars (Yellow)
+            'rgba(75, 192, 192, 1)', // 4 Stars (Teal)
+            'rgba(54, 162, 235, 1)'  // 5 Stars (Blue)
+        ];
+
+        const ctx = document.getElementById('ratingPieChart').getContext('2d');
+
+        const config = {
+            type: 'doughnut', 
+            data: {
+                labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+                datasets: [
+                    {
+                        // INNER RING: Student Data
+                        label: 'Student Ratings',
+                        data: studentData,
+                        backgroundColor: starColors.map(color => color.replace('1)', '0.5)')), // Lighter shade for inner ring
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        cutout: '40%', // Size of the center hole
+                        weight: 1.5 // Thickness of the ring
+                    },
+                    {
+                        // OUTER RING: Teacher Data
+                        label: 'Teacher Ratings',
+                        data: teacherData,
+                        backgroundColor: starColors.map(color => color.replace('1)', '0.9)')), // Darker shade for outer ring
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        cutout: '60%', // Cutout defines inner diameter relative to total size
+                        weight: 1.5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allows chart to fit 350px height
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Rating Distribution (Outer: Teachers, Inner: Students)'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.label + ' - ' + context.parsed + ' votes';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        new Chart(ctx, config);
+    });
+</script>
+{% endblock %}

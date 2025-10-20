@@ -1,0 +1,214 @@
+{% extends "base.html" %} 
+{% block title %}Create Paper - AI Paper Setter{% endblock %} 
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Paper
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="create-paper-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Paper Title</label>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="e.g., Mathematics Final Exam" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" placeholder="e.g., Mathematics, Physics, Education" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="difficulty" class="form-label">Difficulty Level</label>
+                                <select class="form-select" id="difficulty" name="difficulty" required>
+                                    <option value="">Select Difficulty</option>
+                                    <option value="easy">Easy</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="duration" class="form-label">Duration (minutes)</label>
+                                <input type="number" class="form-control" id="duration" name="duration" min="15" max="300" value="60" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="total_questions" class="form-label">Total Questions</label>
+                                <input type="text" class="form-control fw-bold" id="total_questions" value="0" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+
+                    <h5 class="mb-3">Specify Question Counts:</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="num_mcq" class="form-label">Number of one word question</label>
+                                <input type="number" class="form-control question-count" id="num_mcq" name="num_mcq" min="0" value="5" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="num_short" class="form-label">Number of Short Answer</label>
+                                <input type="number" class="form-control question-count" id="num_short" name="num_short" min="0" value="3" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="num_essay" class="form-label">Number of Essay/Long Answer</label>
+                                <input type="number" class="form-control question-count" id="num_essay" name="num_essay" min="0" value="2" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>AI Generation:</strong> Total questions: <span id="alert_total_questions" class="fw-bold">10</span>. Please ensure at least one question is requested across all types.
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <!-- Since we are now using specific counts, we will just use the single Generate button -->
+                        <button type="submit" class="btn btn-primary" id="generate-btn">
+                            <span class="btn-text">
+                                <i class="fas fa-magic me-2"></i>Generate Paper with AI
+                            </span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    </div>
+
+                    {% if preview %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Preview: AI Generated Questions</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for q in preview %}
+                                <div class="mb-4">
+                                    <strong>Type:</strong> {{ q.type|title }}<br>
+                                    <strong>Question:</strong> {{ q.question }}<br>
+                                    {% if q.type == 'multiple_choice' %}
+                                        <strong>Options:</strong>
+                                        <ul>
+                                            {% for opt in q.options %}
+                                                <li>{{ opt }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                        <strong>Correct Answer:</strong> {{ q.correct_answer }}<br>
+                                    {% endif %}
+                                    {% if q.type == 'short_answer' %}
+                                        <strong>Model Answer:</strong> {{ q.model_answer }}<br>
+                                        <strong>Marking Criteria:</strong> {{ q.marking_criteria }}<br>
+                                    {% endif %}
+                                    {% if q.type == 'essay' %}
+                                        <strong>Marking Criteria:</strong> {{ q.marking_criteria }}<br>
+                                    {% endif %}
+                                    <strong>Marks:</strong> {{ q.marks }}<br>
+                                    {% if q.explanation %}<strong>Explanation:</strong> {{ q.explanation }}<br>{% endif %}
+                                </div>
+                                <hr>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Section (unchanged) -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Tips for Better AI Generation
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Be specific with subject names</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Choose appropriate difficulty level</li>
+                            <li><i class="fas fa-check text-success me-2"></i>**Control the mix of question types (MCQ, Short, Essay)**</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-lightbulb text-warning me-2"></i>AI will attempt to use $LaTeX$ for formulas.</li>
+                            <li><i class="fas fa-lightbulb text-warning me-2"></i>Questions include suggested marks and criteria.</li>
+                            <li><i class="fas fa-lightbulb text-warning me-2"></i>Papers can be downloaded in multiple formats.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const countInputs = document.querySelectorAll('.question-count');
+        const totalInput = document.getElementById('total_questions');
+        const alertTotalSpan = document.getElementById('alert_total_questions');
+        const form = document.getElementById('create-paper-form');
+        const generateBtn = document.getElementById('generate-btn');
+
+        function calculateTotal() {
+            let total = 0;
+            countInputs.forEach(input => {
+                total += parseInt(input.value) || 0;
+            });
+            totalInput.value = total;
+            alertTotalSpan.textContent = total;
+            return total;
+        }
+
+        countInputs.forEach(input => {
+            input.addEventListener('input', calculateTotal);
+            // Ensure values are non-negative
+            input.addEventListener('change', () => {
+                if (parseInt(input.value) < 0 || input.value === '') {
+                    input.value = 0;
+                }
+                calculateTotal();
+            });
+        });
+
+        // Initial calculation on load
+        calculateTotal();
+
+        // Add loading state to button on form submit
+        form.addEventListener('submit', function() {
+            const total = calculateTotal();
+            if (total === 0) {
+                alert('Please specify at least one question.');
+                event.preventDefault();
+                return;
+            }
+            
+            generateBtn.setAttribute('disabled', 'disabled');
+            generateBtn.querySelector('.btn-text').classList.add('d-none');
+            generateBtn.querySelector('.spinner-border-sm').classList.remove('d-none');
+        });
+    });
+</script>
+
+{% endblock %}
